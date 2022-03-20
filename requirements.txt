@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 tensorflow
 flask
 numpy
+=======
+flask
+numpy
+tensorflow
+>>>>>>> 969b9d868e0b7ef755b7e33e5b286915a42cf8f8
 
