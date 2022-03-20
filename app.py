@@ -1,8 +1,9 @@
-import json
 from flask import Flask, render_template, request, jsonify
-from simplejson import dump
 import tensorflow as tf
 import numpy as np
+import argparse
+import matplotlib.pyplot as plt
+
 
 app = Flask(__name__)
 model = tf.keras.models.load_model('model')
@@ -20,13 +21,15 @@ def predict():
         image = tf.keras.applications.efficientnet_v2.preprocess_input(image)
         image = tf.image.resize(image, (128, 128))
         image = tf.expand_dims(image, axis=0)
+
+        if image.shape[-1] != 3:
+            return jsonify({"error": "Number of image channels must be equal to 3."}), 400
+
         preds = model.predict(image)
         preds = tf.Variable(preds)
         probas = tf.keras.activations.softmax(preds).numpy().reshape(-1)
         prediction = np.argmax(probas)
-
         probas = np.round_(probas * 100, decimals=2)
-
         result = {
             'prediction': classes[prediction],
             'probas': {str(class_): str(proba) for class_ , proba in zip(classes, probas)}
@@ -54,4 +57,8 @@ def statistic():
     return jsonify(result), 200
    
 if __name__ == "__main__":
-    app.run(port=8000)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--port', default=5000, type=int, help='port number') 
+
+    args = parser.parse_args()
+    app.run(port=args.port)
